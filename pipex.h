@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <fcntl.h>
 #include <stddef.h>
+#include <sys/wait.h>
 
 char	*ft_strrchr(const char *s, int c);
 char *find_path(char **envp);
