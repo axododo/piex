@@ -1,4 +1,5 @@
 #include "pipex.h"
+#include <stdio.h>
 
 char **pars_cmd(char *cmd) {
   char **pcmd = ft_split(cmd, ' ');
@@ -26,6 +27,7 @@ char *find_cmd(char **path, char *cmd) {
     }
     i++;
   }
+  return (NULL);
 }
 
 int main(int argc, char *argv[], char **envp) {
@@ -53,17 +55,17 @@ int main(int argc, char *argv[], char **envp) {
 
   char *cmd1 = argv[2];
   char **pcmd1 = pars_cmd(cmd1);
-  find_cmd(path, pcmd1[0]);
+  char *cmd_path = find_cmd(path, pcmd1[0]);
 
   int a = pipe(pipe_fd);
   printf("%i\n", a);
 
   int pid1 = fork();
-  int pid2 = fork();
+  //int pid2 = fork();
 
   if (pid1 == 0) {
     printf("\n enffant n1 \n");
-    execve(pcmd1[1], ++pcmd1, envp);
+    printf("%d",execve(cmd_path, pcmd1, NULL));
   }
   // if (pid2 == 0) {
   //   printf("\n enffant n2 \n");
@@ -71,5 +73,6 @@ int main(int argc, char *argv[], char **envp) {
   // }
   int stat;
   waitpid(pid1, &stat, 0);
+  
   return 0;
 }
