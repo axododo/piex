@@ -31,43 +31,31 @@ char *find_cmd(char **path, char *cmd) {
 
 int main(int argc, char *argv[], char **envp) {
     int pipe_fd[2];
-
-    // Vérification des arguments
     if (argc != 5) {
-        write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 38);
+        write(2, "BAD NB ARG", 38);
         return (1);
     }
-
-    // Ouverture du fichier d'entrée
     int fd_in = open(argv[1], O_RDONLY);
     if (fd_in == -1) {
         perror("input file");
         exit(1);
     }
-
-    // Ouverture du fichier de sortie
     int fd_out = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
     if (fd_out == -1) {
         perror("output file");
         close(fd_in);
         exit(1);
     }
-
-    // Récupération et parsing du PATH
     char *path_env = find_path(envp);
     if (!path_env) {
         write(2, "PATH not found\n", 15);
         exit(1);
     }
     char **path = ft_split(path_env, ':');
-
-    // Création du pipe
     if (pipe(pipe_fd) == -1) {
         perror("pipe");
         exit(1);
     }
-
-    // Parsing et recherche de cmd1
     char **pcmd1 = pars_cmd(argv[2]);
     char *cmd1_path = find_cmd(path, pcmd1[0]);
     if (!cmd1_path) {
@@ -76,8 +64,6 @@ int main(int argc, char *argv[], char **envp) {
         write(2, "\n", 1);
         exit(127);
     }
-
-    // Premier fork (cmd1)
     int pid1 = fork();
     if (pid1 == -1) {
         perror("fork");
@@ -85,26 +71,19 @@ int main(int argc, char *argv[], char **envp) {
     }
 
     if (pid1 == 0) {
-        // PROCESSUS FILS 1
-        // Redirections
         dup2(fd_in, STDIN_FILENO);
         dup2(pipe_fd[1], STDOUT_FILENO);
 
-        // Fermeture de tous les descripteurs
         close(pipe_fd[0]);
         close(pipe_fd[1]);
         close(fd_in);
         close(fd_out);
 
-        // Exécution
         execve(cmd1_path, pcmd1, envp);
 
-        // Si on arrive ici, execve a échoué
         perror("execve cmd1");
         exit(127);
     }
-
-    // Parsing et recherche de cmd2
     char **pcmd2 = pars_cmd(argv[3]);
     char *cmd2_path = find_cmd(path, pcmd2[0]);
     if (!cmd2_path) {
@@ -113,8 +92,6 @@ int main(int argc, char *argv[], char **envp) {
         write(2, "\n", 1);
         exit(127);
     }
-
-    // Deuxième fork (cmd2)
     int pid2 = fork();
     if (pid2 == -1) {
         perror("fork");
@@ -122,33 +99,24 @@ int main(int argc, char *argv[], char **envp) {
     }
 
     if (pid2 == 0) {
-        // PROCESSUS FILS 2
-        // Redirections
         dup2(pipe_fd[0], STDIN_FILENO);
         dup2(fd_out, STDOUT_FILENO);
-
-        // Fermeture de tous les descripteurs
         close(pipe_fd[0]);
         close(pipe_fd[1]);
         close(fd_in);
         close(fd_out);
 
-        // Exécution
         execve(cmd2_path, pcmd2, envp);
 
-        // Si on arrive ici, execve a échoué
         perror("execve cmd2");
         exit(127);
     }
 
-    // PROCESSUS PARENT
-    // Fermeture de tous les descripteurs
     close(pipe_fd[0]);
     close(pipe_fd[1]);
     close(fd_in);
     close(fd_out);
 
-    // Attente des deux processus fils
     waitpid(pid1, NULL, 0);
     waitpid(pid2, NULL, 0);
 
