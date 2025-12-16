@@ -122,3 +122,7 @@ int main(int argc, char *argv[], char **envp) {
 
     return (0);
 }
+// free path pcmd* cmd*_pacth
+// fix join
+// verif dup2
+// let eroor command on child 
