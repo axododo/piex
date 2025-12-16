@@ -1,5 +1,23 @@
 #include "pipex.h"
 
+static void   ft_free(char **s1)
+{
+    int    i;
+
+    i = 0;
+    if (s1)
+    {
+        while (s1[i])
+        {
+            free(s1[i]);
+            s1[i] = NULL;
+            i++;
+        }
+        free(s1);
+        s1 = NULL;
+    }
+}
+
 char **pars_cmd(char *cmd) {
     char **pcmd = ft_split(cmd, ' ');
     return (pcmd);
@@ -86,6 +104,7 @@ int main(int argc, char *argv[], char **envp) {
     }
     char **pcmd2 = pars_cmd(argv[3]);
     char *cmd2_path = find_cmd(path, pcmd2[0]);
+    free(path);
     if (!cmd2_path) {
         write(2, "command not found: ", 19);
         write(2, pcmd2[0], ft_strlen(pcmd2[0]));
@@ -111,7 +130,13 @@ int main(int argc, char *argv[], char **envp) {
         perror("execve cmd2");
         exit(127);
     }
-
+    free(pcmd1);
+    free(pcmd2);
+    free(cmd1_path);
+    free(cmd2_path);
+    ft_free(path);
+    //free(path);
+    
     close(pipe_fd[0]);
     close(pipe_fd[1]);
     close(fd_in);
@@ -122,7 +147,3 @@ int main(int argc, char *argv[], char **envp) {
 
     return (0);
 }
-// free path pcmd* cmd*_pacth
-// fix join
-// verif dup2
-// let eroor command on child 
