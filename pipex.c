@@ -28,11 +28,20 @@ char *find_cmd(char **path, char *cmd) {
     }
     return (NULL);
 }
+void free_array(char **arr) {
+    int i = 0;
+    while (arr[i]) {
+        free(arr[i]);
+        i++;
+    }
+    free(arr);
+}
+
 
 int main(int argc, char *argv[], char **envp) {
     int pipe_fd[2];
     if (argc != 5) {
-        write(2, "BAD NB ARG", 38);
+        write(2, "BAD NB ARG", 11);
         return (1);
     }
     int fd_in = open(argv[1], O_RDONLY);
@@ -78,7 +87,11 @@ int main(int argc, char *argv[], char **envp) {
         close(pipe_fd[1]);
         close(fd_in);
         close(fd_out);
-
+        free_array(path);
+    //    free_array(pcmd1);
+      //  free_array(pcmd2);
+      //  free(cmd1_path);
+      //  free(cmd2_path);
         execve(cmd1_path, pcmd1, envp);
 
         perror("execve cmd1");
@@ -105,7 +118,11 @@ int main(int argc, char *argv[], char **envp) {
         close(pipe_fd[1]);
         close(fd_in);
         close(fd_out);
-
+        free_array(path);
+        free_array(pcmd1);
+        //free_array(pcmd2);
+        free(cmd1_path);
+        //free(cmd2_path);
         execve(cmd2_path, pcmd2, envp);
 
         perror("execve cmd2");
@@ -116,6 +133,11 @@ int main(int argc, char *argv[], char **envp) {
     close(pipe_fd[1]);
     close(fd_in);
     close(fd_out);
+    free_array(path);
+    free_array(pcmd1);
+    free_array(pcmd2);
+    free(cmd1_path);
+    free(cmd2_path);
 
     waitpid(pid1, NULL, 0);
     waitpid(pid2, NULL, 0);
@@ -125,4 +147,4 @@ int main(int argc, char *argv[], char **envp) {
 // free path pcmd* cmd*_pacth
 // fix join
 // verif dup2
-// let eroor command on child 
+// let eroor command on child
