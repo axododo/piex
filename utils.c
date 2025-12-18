@@ -99,9 +99,8 @@ char	*ft_strjoin(char const *s1, char const *s2)
 		return (NULL);
 	while (s1[i])
 	{
-		s3[i] = s1[j];
+		s3[i] = s1[i];
 		i++;
-		j++;
 	}
   s3[i] = '/';
   i++;
