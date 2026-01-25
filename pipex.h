@@ -16,8 +16,8 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size);
 char	*ft_substr(char const *s, unsigned int start, size_t len);
 size_t	ft_strlen(const char *str);
 char	*ft_strjoin(char const *s1, char const *s2);
-
-
-
+char **pars_cmd(char *cmd);
+char *find_cmd(char **path, char *cmd);
+void free_array(char **arr);
 
 #endif
