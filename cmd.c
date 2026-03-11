@@ -1,65 +1,64 @@
+
 #include "pipex.h"
 
-void	free_array(char **arr)
+void	free_array(char **a)
 {
 	int	i;
 
 	i = 0;
-	if (!arr)
-		return ;
-	while (arr[i])
-	{
-		free(arr[i]);
-		i++;
-	}
-	free(arr);
+	while (a && a[i])
+		free(a[i++]);
+	free(a);
 }
 
-char	*find_cmd(char **paths, char *cmd)
+char	*find_cmd(char **p, char *c)
 {
 	int		i;
-	char	*full_path;
+	char	*path;
 
 	i = 0;
-	if (!paths || !cmd)
-		return (NULL);
-	if (access(cmd, F_OK | X_OK) == 0)
-		return (cmd);
-	while (paths[i])
+	if (!c || !*c || access(c, X_OK) == 0)
+		return (c);
+	while (p && p[i])
 	{
-		full_path = ft_strjoin(paths[i], cmd);
-		if (access(full_path, F_OK | X_OK) == 0)
-			return (full_path);
-		free(full_path);
-		i++;
+		path = ft_strjoin(p[i++], c);
+		if (!path)
+			return (NULL);
+		if (access(path, X_OK) == 0)
+			return (path);
+		free(path);
 	}
 	return (NULL);
 }
 
-void	execute_cmd(char *cmd, char **envp, char **paths)
+static void	cmd_not_found(char **args, char **paths)
 {
-	char	**cmd_args;
-	char	*cmd_path;
+	write(2, args[0], ft_strlen(args[0]));
+	write(2, ": command not found\n", 20);
+	free_array(args);
+	free_array(paths);
+	exit(127);
+}
 
-	cmd_args = ft_split(cmd, ' ');
-	if (!cmd_args || !cmd_args[0])
+void	execute_cmd(char *cmd, char **env, char **paths)
+{
+	char	**args;
+	char	*path;
+
+	args = ft_split(cmd, ' ');
+	if (!args || !args[0])
 	{
-		write(2, "Error: command not found\n", 25);
+		free_array(args);
+		free_array(paths);
 		exit(127);
 	}
-	cmd_path = find_cmd(paths, cmd_args[0]);
-	if (!cmd_path)
-	{
-		write(2, "Error: command not found: ", 26);
-		write(2, cmd_args[0], ft_strlen(cmd_args[0]));
-		write(2, "\n", 1);
-		free_array(cmd_args);
-		exit(127);
-	}
-	if (execve(cmd_path, cmd_args, envp) == -1)
-	{
-		perror("execve");
-		free_array(cmd_args);
-		exit(126);
-	}
+	path = find_cmd(paths, args[0]);
+	if (!path)
+		cmd_not_found(args, paths);
+	execve(path, args, env);
+	if (path != args[0])
+		free(path);
+	free_array(args);
+	free_array(paths);
+	exit(126);
 }

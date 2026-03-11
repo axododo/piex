@@ -1,48 +1,25 @@
 #include "pipex.h"
 
-char	*ft_substr(char const *s, unsigned int start, size_t len)
+size_t	ft_strlen(const char *str)
 {
-	char	*dest;
-	size_t	size;
+	int	i;
 
-	if (!s)
-		return (NULL);
-	size = ft_strlen(s) - start;
-	if (size > len)
-		size = len;
-	if (start >= ft_strlen(s))
-	{
-		dest = malloc(sizeof(char));
-		if (!dest)
-			return (0);
-		dest[0] = 0;
-		return (dest);
-	}
-	dest = malloc(sizeof(char) * (size + 1));
-	if (!dest)
-		return (0);
-	ft_strlcpy(dest, &s[start], (size + 1));
-	return (dest);
+	i = 0;
+	while (str[i])
+		i++;
+	return (i);
 }
 
 size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 {
-	size_t	i;
 	size_t	len;
-	size_t	size2;
+	size_t	i;
 
-	size2 = size;
-	len = 0;
+	len = ft_strlen(src);
 	i = 0;
-	while (src[len])
-	{
-		len++;
-	}
 	if (size == 0)
-	{
 		return (len);
-	}
-	while (src[i] && i < size2 - 1)
+	while (src[i] && i < size - 1)
 	{
 		dst[i] = src[i];
 		i++;
@@ -51,59 +28,65 @@ size_t	ft_strlcpy(char *dst, const char *src, size_t size)
 	return (len);
 }
 
-int	ft_strncmp(char *s1, char *s2, unsigned int n)
+char	*ft_substr(char const *s, unsigned int start, size_t len)
+{
+	char	*dest;
+	size_t	size;
+
+	if (!s)
+		return (NULL);
+	if (start >= ft_strlen(s))
+	{
+		dest = malloc(sizeof(char));
+		if (!dest)
+			return (NULL);
+		dest[0] = 0;
+		return (dest);
+	}
+	size = ft_strlen(s) - start;
+	if (size > len)
+		size = len;
+	dest = malloc(sizeof(char) * (size + 1));
+	if (!dest)
+		return (NULL);
+	ft_strlcpy(dest, s + start, size + 1);
+	return (dest);
+}
+
+int	ft_strncmp(const char *s1, const char *s2, unsigned int n)
 {
 	unsigned int	i;
-	int				x;
 	unsigned char	*str1;
 	unsigned char	*str2;
 
 	str1 = (unsigned char *)s1;
 	str2 = (unsigned char *)s2;
 	i = 0;
-	x = 0;
-	while ((str1[i] && str2[i] && (str1[i] == str2[i])) && i < n)
-	{
+	while (i < n && str1[i] && str2[i] && str1[i] == str2[i])
 		i++;
-	}
 	if (i == n)
 		return (0);
-	x = str1[i] - str2[i];
-	return (x);
+	return (str1[i] - str2[i]);
 }
 
-size_t	ft_strlen(const char *str)
-{
-	int	i;
-
-	i = 0;
-	while (str[i])
-	{
-		i++;
-	}
-	return (i);
-}
-
-char	*ft_strjoin(char const *s1, char const *s2)
+char	*ft_strjoin(const char *s1, const char *s2)
 {
 	char	*s3;
 	int		i;
 	int		j;
 
-	i = 0;
-	j = 0;
 	if (!s1 || !s2)
 		return (NULL);
 	s3 = malloc(ft_strlen(s1) + ft_strlen(s2) + 2);
 	if (!s3)
 		return (NULL);
+	i = 0;
 	while (s1[i])
 	{
 		s3[i] = s1[i];
 		i++;
 	}
-  s3[i] = '/';
-  i++;
+	s3[i++] = '/';
 	j = 0;
 	while (s2[j])
 	{

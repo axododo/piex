@@ -8,76 +8,113 @@ void	error_exit(char *msg)
 
 char	**find_path(char **envp)
 {
-	int		i;
-	char	**paths;
+	int	i;
 
 	i = 0;
 	while (envp[i])
 	{
 		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
-		{
-			paths = ft_split(envp[i] + 5, ':');
-			return (paths);
-		}
+			return (ft_split(envp[i] + 5, ':'));
 		i++;
 	}
 	return (NULL);
 }
 
-void	child_process_1(t_pip *util, char **argv, char **envp)
+void	child_process_1(t_pip *u, char **a, char **e)
 {
-	close(util->pipe_fd[0]);
-	dup2(util->fd_in, STDIN_FILENO);
-	dup2(util->pipe_fd[1], STDOUT_FILENO);
-	close(util->pipe_fd[1]);
-	close(util->fd_in);
-	execute_cmd(argv[2], envp, util->paths);
-}
+	char	**paths;
 
-void	child_process_2(t_pip *util, char **argv, char **envp)
-{
-	close(util->pipe_fd[1]);
-	dup2(util->pipe_fd[0], STDIN_FILENO);
-	dup2(util->fd_out, STDOUT_FILENO);
-	close(util->pipe_fd[0]);
-	close(util->fd_out);
-	execute_cmd(argv[3], envp, util->paths);
-}
-
-int	main(int argc, char *argv[], char **envp)
-{
-	t_pip	util;
-
-	if (argc != 5)
+	close(u->pipe_fd[0]);
+	if (u->fd_in < 0 || dup2(u->fd_in, 0) == -1)
 	{
-		write(2, "Usage: ./pipex file1 cmd1 cmd2 file2\n", 38);
+		close(u->pipe_fd[1]);
+		if (u->fd_out >= 0)
+			close(u->fd_out);
+		if (u->fd_in >= 0)
+			close(u->fd_in);
+		exit(1);
+	}
+	if (dup2(u->pipe_fd[1], 1) == -1)
+	{
+		close(u->pipe_fd[1]);
+		close(u->fd_in);
+		close(u->fd_out);
+		exit(1);
+	}
+	close(u->pipe_fd[1]);
+	close(u->fd_in);
+	close(u->fd_out);
+	paths = find_path(e);
+	execute_cmd(a[2], e, paths);
+}
+
+void	child_process_2(t_pip *u, char **a, char **e)
+{
+	char	**paths;
+
+	close(u->pipe_fd[1]);
+	if (u->fd_out < 0 || dup2(u->pipe_fd[0], 0) == -1)
+	{
+		close(u->pipe_fd[0]);
+		if (u->fd_in >= 0)
+			close(u->fd_in);
+		if (u->fd_out >= 0)
+			close(u->fd_out);
+		exit(1);
+	}
+	if (dup2(u->fd_out, 1) == -1)
+	{
+		close(u->pipe_fd[0]);
+		close(u->fd_in);
+		close(u->fd_out);
+		exit(1);
+	}
+	close(u->pipe_fd[0]);
+	close(u->fd_in);
+	close(u->fd_out);
+	paths = find_path(e);
+	execute_cmd(a[3], e, paths);
+}
+
+static void	open_files(t_pip *u, char **av)
+{
+	u->fd_in = open(av[1], O_RDONLY);
+	if (u->fd_in < 0)
+		perror(av[1]);
+	u->fd_out = open(av[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
+	if (u->fd_out < 0)
+		perror(av[4]);
+}
+
+int	main(int ac, char *av[], char **env)
+{
+	t_pip	u;
+	int		st;
+
+	if (ac != 5)
+		return (write(2, "Usage: pipex f1 cmd1 cmd2 f2\n", 29), 1);
+	open_files(&u, av);
+	if (pipe(u.pipe_fd) == -1)
+	{
+		if (u.fd_in >= 0)
+			close(u.fd_in);
+		if (u.fd_out >= 0)
+			close(u.fd_out);
 		return (1);
 	}
-	util.fd_in = open(argv[1], O_RDONLY);
-	util.fd_out = open(argv[4], O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (util.fd_in == -1)
-		error_exit("input file");
-	if (util.fd_out == -1)
-		error_exit("output file");
-	util.paths = find_path(envp);
-	if (pipe(util.pipe_fd) == -1)
-		error_exit("pipe");
-	util.pid1 = fork();
-	if (util.pid1 == -1)
-		error_exit("fork");
-	if (util.pid1 == 0)
-		child_process_1(&util, argv, envp);
-	util.pid2 = fork();
-	if (util.pid2 == -1)
-		error_exit("fork");
-	if (util.pid2 == 0)
-		child_process_2(&util, argv, envp);
-	close(util.pipe_fd[0]);
-	close(util.pipe_fd[1]);
-	close(util.fd_in);
-	close(util.fd_out);
-	waitpid(util.pid1, NULL, 0);
-	waitpid(util.pid2, NULL, 0);
-	free_array(util.paths);
-	return (0);
+	u.pid1 = fork();
+	if (u.pid1 == 0)
+		child_process_1(&u, av, env);
+	u.pid2 = fork();
+	if (u.pid2 == 0)
+		child_process_2(&u, av, env);
+	close(u.pipe_fd[0]);
+	close(u.pipe_fd[1]);
+	if (u.fd_in >= 0)
+		close(u.fd_in);
+	if (u.fd_out >= 0)
+		close(u.fd_out);
+	waitpid(u.pid1, NULL, 0);
+	waitpid(u.pid2, &st, 0);
+	return (WEXITSTATUS(st));
 }

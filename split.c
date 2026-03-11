@@ -1,4 +1,5 @@
 #include "pipex.h"
+
 static size_t	ft_count_words(char const *s, char c)
 {
 	size_t	i;
@@ -16,7 +17,7 @@ static size_t	ft_count_words(char const *s, char c)
 	return (count);
 }
 
- static void	*ft_free(char **w, size_t j)
+static void	*ft_free(char **w, size_t j)
 {
 	while (j--)
 		free(w[j]);
