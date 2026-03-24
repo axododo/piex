@@ -6,7 +6,7 @@
 /*   By: mguilber <mguilber@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 13:52:32 by mguilber          #+#    #+#             */
-/*   Updated: 2026/03/24 16:51:19 by mguilber         ###   ########.fr       */
+/*   Updated: 2026/03/24 19:59:09 by mguilber         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void	child(t_pip u, char **av, char **env)
 int	main(int ac, char *av[], char **env)
 {
 	static t_pip	u = {0};
-	int		st;
+	int				st;
 
 	if (ac != 5)
 		return (write(2, "Usage: pipex f1 cmd1 cmd2 f2\n", 29), 1);
