@@ -1,3 +1,14 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cmd.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mguilber <mguilber@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/24 13:52:42 by mguilber          #+#    #+#             */
+/*   Updated: 2026/03/24 13:59:28 by mguilber         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "pipex.h"
 
@@ -9,6 +20,20 @@ void	free_array(char **a)
 	while (a && a[i])
 		free(a[i++]);
 	free(a);
+}
+
+char	**find_path(char **envp)
+{
+	int	i;
+
+	i = 0;
+	while (envp[i])
+	{
+		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
+			return (ft_split(envp[i] + 5, ':'));
+		i++;
+	}
+	return (NULL);
 }
 
 char	*find_cmd(char **p, char *c)

@@ -1,24 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipex.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mguilber <mguilber@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/24 13:52:32 by mguilber          #+#    #+#             */
+/*   Updated: 2026/03/24 14:00:16 by mguilber         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "pipex.h"
-
-void	error_exit(char *msg)
-{
-	perror(msg);
-	exit(1);
-}
-
-char	**find_path(char **envp)
-{
-	int	i;
-
-	i = 0;
-	while (envp[i])
-	{
-		if (ft_strncmp(envp[i], "PATH=", 5) == 0)
-			return (ft_split(envp[i] + 5, ':'));
-		i++;
-	}
-	return (NULL);
-}
 
 void	child_process_1(t_pip *u, char **a, char **e)
 {
@@ -86,6 +78,15 @@ static void	open_files(t_pip *u, char **av)
 		perror(av[4]);
 }
 
+void	child(t_pip u, char **av, char **env)
+{
+	if (u.pid1 == 0)
+		child_process_1(&u, av, env);
+	u.pid2 = fork();
+	if (u.pid2 == 0)
+		child_process_2(&u, av, env);
+}
+
 int	main(int ac, char *av[], char **env)
 {
 	t_pip	u;
@@ -103,11 +104,7 @@ int	main(int ac, char *av[], char **env)
 		return (1);
 	}
 	u.pid1 = fork();
-	if (u.pid1 == 0)
-		child_process_1(&u, av, env);
-	u.pid2 = fork();
-	if (u.pid2 == 0)
-		child_process_2(&u, av, env);
+	child(u, av, env);
 	close(u.pipe_fd[0]);
 	close(u.pipe_fd[1]);
 	if (u.fd_in >= 0)
