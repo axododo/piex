@@ -6,7 +6,7 @@
 /*   By: mguilber <mguilber@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/24 13:52:32 by mguilber          #+#    #+#             */
-/*   Updated: 2026/03/24 14:00:16 by mguilber         ###   ########.fr       */
+/*   Updated: 2026/03/24 16:51:19 by mguilber         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,7 @@ void	child(t_pip u, char **av, char **env)
 
 int	main(int ac, char *av[], char **env)
 {
-	t_pip	u;
+	static t_pip	u = {0};
 	int		st;
 
 	if (ac != 5)
